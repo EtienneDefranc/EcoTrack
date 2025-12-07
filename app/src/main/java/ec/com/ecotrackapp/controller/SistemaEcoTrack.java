@@ -197,5 +197,17 @@ public class SistemaEcoTrack implements Serializable {
     public ArrayList<VehiculoRecolector> getVehiculosEnRuta() {
         return vehiculosEnRuta;
     }
+
+    public List<Zona> obtenerZonasConUmbralSuperado() {
+        List<Zona> resultado = new ArrayList<>();
+
+        for (Zona z : zonas.values()) {
+            if (z.superaUmbral()) {
+                resultado.add(z);
+            }
+        }
+        return resultado;
+    }
+
 }
 

@@ -12,7 +12,7 @@ public class Zona implements Serializable, Comparable<Zona> {
     private double pesoRecolectado;
     private double pesoPendiente;
     private int cantidadResiduos;
-
+    private int umbralResiduos = 5; // a partir de 5 residuos acumulados se envia una notificacion
     public Zona(String nombre) {
         this.nombre = nombre;
         this.pesoRecolectado = 0;
@@ -20,6 +20,13 @@ public class Zona implements Serializable, Comparable<Zona> {
         this.cantidadResiduos = 0;
     }
 
+    public Zona(String nombre, int umbralResiduos) {
+        this.nombre = nombre;
+        this.umbralResiduos = umbralResiduos;
+        this.pesoRecolectado = 0;
+        this.pesoPendiente = 0;
+        this.cantidadResiduos = 0;
+    }
     public double calcularUtilidad() {
         return pesoRecolectado - pesoPendiente;
     }
@@ -38,6 +45,10 @@ public class Zona implements Serializable, Comparable<Zona> {
 
     public boolean esCritica() {
         return calcularUtilidad() < 0;
+    }
+
+    public boolean superaUmbral() {
+        return cantidadResiduos >= umbralResiduos;
     }
 
     public int getNivelPrioridad() {
@@ -81,6 +92,10 @@ public class Zona implements Serializable, Comparable<Zona> {
     public void setCantidadResiduos(int cantidadResiduos) {
         this.cantidadResiduos = cantidadResiduos;
     }
+
+    public int getUmbralResiduos() { return umbralResiduos; }
+    public void setUmbralResiduos(int umbralResiduos) { this.umbralResiduos = umbralResiduos; }
+
 
     @Override
     public int compareTo(Zona otra) {
