@@ -19,11 +19,13 @@ import java.util.Map;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
+import android.content.Intent;
+
 public class EstadisticasActivity extends AppCompatActivity {
 
     private SistemaEcoTrack sistema;
     private ListView lvEstadisticas;
-    private MaterialButton btnActualizar, btnVolver;
+    private MaterialButton btnActualizar, btnVerGraficos, btnVolver;
     private TextView tvInfo, tvTotalResiduos, tvPesoTotal;
 
     @Override
@@ -41,6 +43,7 @@ public class EstadisticasActivity extends AppCompatActivity {
     private void inicializarVistas() {
         lvEstadisticas = findViewById(R.id.lvEstadisticas);
         btnActualizar = findViewById(R.id.btnActualizar);
+        btnVerGraficos = findViewById(R.id.btnVerGraficos);
         btnVolver = findViewById(R.id.btnVolver);
         tvInfo = findViewById(R.id.tvInfo);
         tvTotalResiduos = findViewById(R.id.tvTotalResiduos);
@@ -49,6 +52,12 @@ public class EstadisticasActivity extends AppCompatActivity {
 
     private void configurarListeners() {
         btnActualizar.setOnClickListener(v -> actualizarEstadisticas());
+
+        btnVerGraficos.setOnClickListener(v -> {
+            Intent intent = new Intent(EstadisticasActivity.this, GraficosActivity.class);
+            startActivity(intent);
+        });
+
         btnVolver.setOnClickListener(v -> finish());
     }
 

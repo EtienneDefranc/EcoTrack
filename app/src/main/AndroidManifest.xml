@@ -51,6 +51,12 @@
             android:label="Zonas Urbanas"
             android:parentActivityName=".MainActivity" />
 
+        <activity
+            android:name=".GraficosActivity"
+            android:label="Gráficos"
+            android:parentActivityName=".EstadisticasActivity" />
+
+
     </application>
 
 </manifest>
