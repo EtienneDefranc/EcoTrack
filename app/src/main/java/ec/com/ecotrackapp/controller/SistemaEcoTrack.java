@@ -12,6 +12,21 @@ import java.io.*;
 import java.time.LocalDate;
 import java.util.*;
 
+import android.util.Log;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.ArrayList;
+
+import ec.com.ecotrackapp.models.EstadoSistema;
+import ec.com.ecotrackapp.models.Zona;
+import ec.com.ecotrackapp.models.Residuo;
+import ec.com.ecotrackapp.models.VehiculoRecolector;
 /**
  * Singleton del Sistema EcoTrack para Android
  */
@@ -26,6 +41,8 @@ public class SistemaEcoTrack implements Serializable {
     private HashMap<String, Zona> zonas;
     private TreeMap<Residuo.TipoResiduo, Double> estadisticasPorTipo;
     private ArrayList<VehiculoRecolector> vehiculosEnRuta;
+
+    private static final String NOMBRE_BACKUP = "ecotrack_backup.json";
 
     private SistemaEcoTrack() {
         this.residuos = new ListaCircularDoble<>();
@@ -208,6 +225,150 @@ public class SistemaEcoTrack implements Serializable {
         }
         return resultado;
     }
+
+
+
+    // tengo que modificarlo para que, confirmar la forma en la que accedo a
+    // residuos y vehiculos
+    private EstadoSistema construirEstado() {
+        EstadoSistema estado = new EstadoSistema();
+
+        // Si tienes HashMap<String, Zona> zonas;
+        estado.zonas = new ArrayList<>(zonas.values());
+
+        estado.residuos = new ArrayList<>();
+        for (int i = 0; i < residuos.getTamanio(); i++) {
+            estado.residuos.add(residuos.obtener(i));
+        }
+
+        // Vehículos
+        estado.vehiculos = new ArrayList<>();
+        for (int i = 0; i < vehiculosEnRuta.size(); i++) {
+            estado.vehiculos.add(vehiculosEnRuta.get(i)); // ajusta
+        }
+
+        return estado;
+    }
+    public JSONArray zonasToJsonArray(HashMap<String, Zona> zonas) throws Exception {
+        JSONArray arr = new JSONArray();
+        for (Zona z : zonas.values()) {
+            JSONObject o = new JSONObject();
+            o.put("nombre", z.getNombre());
+            o.put("pesoRecolectado", z.getPesoRecolectado());
+            o.put("pesoPendiente", z.getPesoPendiente());
+            o.put("cantidadResiduos", z.getCantidadResiduos());
+            arr.put(o);
+        }
+        return arr;
+    }
+    public JSONArray residuosToJsonArray(ListaCircularDoble<Residuo> residuos) throws Exception {
+        JSONArray arr = new JSONArray();
+
+        for (Residuo r : residuos) {
+            JSONObject o = new JSONObject();
+            o.put("nombre", r.getNombre());
+            o.put("tipo", r.getTipo().name());
+            o.put("peso", r.getPeso());
+            o.put("fecha", r.getFechaRecoleccion() != null ? r.getFechaRecoleccion().toString() : "");
+            o.put("zona", r.getZona());
+            o.put("prioridad", r.getPrioridadAmbiental());
+            arr.put(o);
+        }
+        return arr;
+    }
+
+    public boolean exportarJson(Context context) {
+        try {
+            JSONObject root = new JSONObject();
+            root.put("zonas", zonasToJsonArray(zonas));
+            root.put("residuos", residuosToJsonArray(residuos));
+            // root.put("vehiculos", vehiculosToJsonArray(vehiculos));
+
+            File file = new File(context.getFilesDir(), "ecotrack_backup.json");
+            FileWriter fw = new FileWriter(file);
+            fw.write(root.toString(2)); // bonito
+            fw.close();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean importarJson(Context context) {
+        try {
+            File file = new File(context.getFilesDir(), "ecotrack_backup.json");
+            if (!file.exists()) return false;
+
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) sb.append(line);
+            br.close();
+
+            JSONObject root = new JSONObject(sb.toString());
+
+            // Limpias estructuras
+            zonas.clear();
+            residuos.limpiar();
+            // vehiculos.limpiar();
+
+            // Zonas
+            JSONArray jZonas = root.getJSONArray("zonas");
+            for (int i = 0; i < jZonas.length(); i++) {
+                JSONObject o = jZonas.getJSONObject(i);
+                Zona z = new Zona(o.getString("nombre"));
+                z.setPesoRecolectado(o.getDouble("pesoRecolectado"));
+                z.setPesoPendiente(o.getDouble("pesoPendiente"));
+                z.setCantidadResiduos(o.getInt("cantidadResiduos"));
+                zonas.put(z.getNombre(), z);
+            }
+
+            // Reiniciar estadísticas
+            inicializarEstadisticas();
+
+// Residuos
+            JSONArray jRes = root.getJSONArray("residuos");
+            for (int i = 0; i < jRes.length(); i++) {
+                JSONObject o = jRes.getJSONObject(i);
+
+                String nombre = o.getString("nombre");
+                Residuo.TipoResiduo tipo = Residuo.TipoResiduo.valueOf(o.getString("tipo"));
+                double peso = o.getDouble("peso");
+                String fechaStr = o.optString("fecha", "");
+                String zona = o.getString("zona");
+                int prioridad = o.getInt("prioridad");
+
+                LocalDate fecha = null;
+                if (!fechaStr.isEmpty()) {
+                    fecha = LocalDate.parse(fechaStr);
+                }
+
+                Residuo r = new Residuo(
+                        nombre,
+                        tipo,
+                        peso,
+                        fecha,
+                        zona,
+                        prioridad
+                );
+
+                residuos.agregar(r);
+
+                // Recalcular estadísticas
+                estadisticasPorTipo.put(
+                        tipo,
+                        estadisticasPorTipo.get(tipo) + peso
+                );
+            }
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
 }
 

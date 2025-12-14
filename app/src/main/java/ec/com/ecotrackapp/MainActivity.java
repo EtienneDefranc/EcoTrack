@@ -23,8 +23,12 @@ import androidx.core.app.NotificationManagerCompat;
 // imports para manejar permiso para las notificaciones
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.widget.Toast;
+
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.google.android.material.button.MaterialButton;
 import ec.com.ecotrackapp.models.Zona;
 
 public class MainActivity extends AppCompatActivity {
@@ -49,6 +53,28 @@ public class MainActivity extends AppCompatActivity {
         configurarListeners();
         cargarDatosDePrueba();
         actualizarEstadisticasRapidas();
+
+        MaterialButton btnExportarJson = findViewById(R.id.btnExportarJson);
+        MaterialButton btnImportarJson = findViewById(R.id.btnImportarJson);
+
+        btnExportarJson.setOnClickListener(v -> {
+            boolean ok = sistema.exportarJson(MainActivity.this);
+            Toast.makeText(MainActivity.this,
+                    ok ? "Exportación JSON completada" : "Error al exportar JSON",
+                    Toast.LENGTH_SHORT).show();
+        });
+
+        btnImportarJson.setOnClickListener(v -> {
+            boolean ok = sistema.importarJson(MainActivity.this);
+            Toast.makeText(MainActivity.this,
+                    ok ? "Importación JSON completada" : "Error al importar JSON",
+                    Toast.LENGTH_SHORT).show();
+
+            if (ok) {
+                actualizarEstadisticasRapidas();
+            }
+        });
+
     }
 
     private void inicializarVistas() {

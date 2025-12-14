@@ -244,6 +244,17 @@
                     android:textColor="@color/secondary_cyan"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExportarJson"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💾 Exportar datos (JSON)" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnImportarJson"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📥 Importar datos (JSON)" />
 
     </LinearLayout>
 </ScrollView>
