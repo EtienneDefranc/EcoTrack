@@ -21,6 +21,12 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.content.ContentValues;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.MediaStore;
+import java.io.OutputStream;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -268,20 +274,58 @@ public class SistemaEcoTrack implements Serializable {
             root.put("residuos", residuosToJsonArray(residuos));
             // root.put("vehiculos", vehiculosToJsonArray(vehiculos));
 
-            File file = new File(context.getFilesDir(), NOMBRE_BACKUP);
-            FileWriter fw = new FileWriter(file);
-            fw.write(root.toString(2)); // bonito
-            fw.close();
-            return true;
+            return guardarEnDescargas(context, NOMBRE_BACKUP, root.toString(2));
         } catch (Exception e) {
             Log.e("SistemaEcoTrack", "Error al exportar JSON", e);
             return false;
         }
     }
 
+    private boolean guardarEnDescargas(Context context, String fileName, String content) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "application/json");
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+            Uri uri = context.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            if (uri != null) {
+                try (OutputStream outputStream = context.getContentResolver().openOutputStream(uri)) {
+                    outputStream.write(content.getBytes());
+                    return true;
+                } catch (IOException e) {
+                    Log.e("SistemaEcoTrack", "Error escribiendo en MediaStore", e);
+                    return false;
+                }
+            }
+            return false;
+        } else {
+            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File file = new File(downloadsDir, fileName);
+            try (FileWriter fw = new FileWriter(file)) {
+                fw.write(content);
+                return true;
+            } catch (IOException e) {
+                Log.e("SistemaEcoTrack", "Error escribiendo en archivo", e);
+                return false;
+            }
+        }
+    }
+
     public boolean importarJson(Context context) {
         try {
-            File file = new File(context.getFilesDir(), NOMBRE_BACKUP);
+            // Intentar leer desde Descargas (para compatibilidad simple con el nuevo exportar)
+            // Nota: En Android 10+ leer directamente File de downloads puede requerir permisos o SAF.
+            // Para simplificar manteniendo compatibilidad con el cambio solicitado, intentamos leer del path público
+            // Si falla, se podría implementar con Storage Access Framework, pero eso requiere cambios en UI (Activity).
+
+            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), NOMBRE_BACKUP);
+
+            // Fallback a almacenamiento interno si no existe en descargas (para compatibilidad hacia atrás)
+            if (!file.exists()) {
+                file = new File(context.getFilesDir(), NOMBRE_BACKUP);
+            }
+
             if (!file.exists()) return false;
 
             BufferedReader br = new BufferedReader(new FileReader(file));

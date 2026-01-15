@@ -51,32 +51,57 @@ public class MainActivity extends AppCompatActivity {
         crearCanalAlertas();
         verificarPermisoNotificaciones();
 
-        inicializarVistas();
-        configurarListeners();
-        cargarDatosDePrueba();
-        actualizarEstadisticasRapidas();
-
         MaterialButton btnExportarJson = findViewById(R.id.btnExportarJson);
         MaterialButton btnImportarJson = findViewById(R.id.btnImportarJson);
 
         btnExportarJson.setOnClickListener(v -> {
-            boolean ok = sistema.exportarJson(MainActivity.this);
-            Toast.makeText(MainActivity.this,
-                    ok ? "Exportación JSON completada" : "Error al exportar JSON",
-                    Toast.LENGTH_SHORT).show();
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            1002);
+                    return;
+                }
+            }
+            performExport();
         });
 
         btnImportarJson.setOnClickListener(v -> {
-            boolean ok = sistema.importarJson(MainActivity.this);
-            Toast.makeText(MainActivity.this,
-                    ok ? "Importación JSON completada" : "Error al importar JSON",
-                    Toast.LENGTH_SHORT).show();
-
-            if (ok) {
-                actualizarEstadisticasRapidas();
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            1003);
+                    return;
+                }
             }
+            performImport();
         });
 
+        inicializarVistas();
+        configurarListeners();
+        cargarDatosDePrueba();
+        actualizarEstadisticasRapidas();
+    }
+
+    private void performExport() {
+        boolean ok = sistema.exportarJson(MainActivity.this);
+        Toast.makeText(MainActivity.this,
+                ok ? "Exportación JSON completada" : "Error al exportar JSON",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    private void performImport() {
+        boolean ok = sistema.importarJson(MainActivity.this);
+        Toast.makeText(MainActivity.this,
+                ok ? "Importación JSON completada" : "Error al importar JSON",
+                Toast.LENGTH_SHORT).show();
+
+        if (ok) {
+            actualizarEstadisticasRapidas();
+        }
     }
 
     private void inicializarVistas() {
