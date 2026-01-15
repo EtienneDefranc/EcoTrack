@@ -2,7 +2,6 @@ package ec.com.ecotrackapp;
 
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -12,12 +11,10 @@ import com.google.android.material.button.MaterialButton;
 
 import ec.com.ecotrackapp.controller.SistemaEcoTrack;
 import ec.com.ecotrackapp.models.Residuo;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+import ec.com.ecotrackapp.tda.Map;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import android.content.Intent;
 
@@ -62,34 +59,34 @@ public class EstadisticasActivity extends AppCompatActivity {
     }
 
     private void actualizarEstadisticas() {
-        List<String> items = new ArrayList<>();
+        java.util.List<String> items = new java.util.ArrayList<>();
         Map<String, Object> stats = sistema.obtenerEstadisticas();
 
         // Actualizar cards de resumen
         tvTotalResiduos.setText(String.valueOf(stats.get("totalResiduos")));
-        tvPesoTotal.setText(String.format("%.1f", stats.get("pesoTotal")));
+        tvPesoTotal.setText(String.format(Locale.getDefault(), "%.1f", (Double) stats.get("pesoTotal")));
 
         // Lista de detalles
         items.add("📊 RESUMEN GENERAL");
         items.add("━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         items.add("");
-        items.add(String.format("📦 Total de residuos: %d", stats.get("totalResiduos")));
-        items.add(String.format("♻️ Residuos en centro: %d", stats.get("residuosEnCentro")));
-        items.add(String.format("⚖️ Peso total: %.2f kg", stats.get("pesoTotal")));
+        items.add(String.format(Locale.getDefault(), "📦 Total de residuos: %d", (Integer) stats.get("totalResiduos")));
+        items.add(String.format(Locale.getDefault(), "♻️ Residuos en centro: %d", (Integer) stats.get("residuosEnCentro")));
+        items.add(String.format(Locale.getDefault(), "⚖️ Peso total: %.2f kg", (Double) stats.get("pesoTotal")));
         items.add("");
 
         items.add("🚛 VEHÍCULOS");
         items.add("━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         items.add("");
-        items.add(String.format("✅ Disponibles: %d", stats.get("vehiculosDisponibles")));
-        items.add(String.format("🚗 En ruta: %d", stats.get("vehiculosEnRuta")));
+        items.add(String.format(Locale.getDefault(), "✅ Disponibles: %d", (Integer) stats.get("vehiculosDisponibles")));
+        items.add(String.format(Locale.getDefault(), "🚗 En ruta: %d", (Integer) stats.get("vehiculosEnRuta")));
         items.add("");
 
         items.add("🗺️ ZONAS URBANAS");
         items.add("━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         items.add("");
-        items.add(String.format("📍 Total de zonas: %d", stats.get("zonasTotales")));
-        items.add(String.format("🚨 Zonas críticas: %d", stats.get("zonasCriticas")));
+        items.add(String.format(Locale.getDefault(), "📍 Total de zonas: %d", (Integer) stats.get("zonasTotales")));
+        items.add(String.format(Locale.getDefault(), "🚨 Zonas críticas: %d", (Integer) stats.get("zonasCriticas")));
         items.add("");
 
         items.add("♻️ ESTADÍSTICAS POR TIPO");
@@ -102,7 +99,7 @@ public class EstadisticasActivity extends AppCompatActivity {
         } else {
             for (Map.Entry<Residuo.TipoResiduo, Double> entry : estadisticasPorTipo.entrySet()) {
                 String emoji = obtenerEmojiPorTipo(entry.getKey());
-                items.add(String.format("%s %s: %.2f kg",
+                items.add(String.format(Locale.getDefault(), "%s %s: %.2f kg",
                     emoji,
                     entry.getKey().getNombre(),
                     entry.getValue()));
@@ -118,11 +115,10 @@ public class EstadisticasActivity extends AppCompatActivity {
 
         // Actualizar hora
         try {
-            LocalTime now = LocalTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-            tvInfo.setText("Última actualización: " + now.format(formatter));
+            SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+            tvInfo.setText(getString(R.string.ultima_actualizacion, formatter.format(new Date())));
         } catch (Exception e) {
-            tvInfo.setText("Última actualización: ahora");
+            tvInfo.setText(getString(R.string.ultima_actualizacion_ahora));
         }
     }
 

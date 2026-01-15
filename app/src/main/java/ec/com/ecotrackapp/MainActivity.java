@@ -30,6 +30,8 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.button.MaterialButton;
 import ec.com.ecotrackapp.models.Zona;
+import ec.com.ecotrackapp.models.Residuo;
+import java.time.LocalDate;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -88,29 +90,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void configurarListeners() {
-        cardRegistro.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, RegistroResiduoActivity.class));
-        });
+        cardRegistro.setOnClickListener(v ->
+            startActivity(new Intent(MainActivity.this, RegistroResiduoActivity.class))
+        );
 
-        cardResiduos.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, ResiduosActivity.class));
-        });
+        cardResiduos.setOnClickListener(v ->
+            startActivity(new Intent(MainActivity.this, ResiduosActivity.class))
+        );
 
-        cardVehiculos.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, VehiculosActivity.class));
-        });
+        cardVehiculos.setOnClickListener(v ->
+            startActivity(new Intent(MainActivity.this, VehiculosActivity.class))
+        );
 
-        cardCentro.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, CentroReciclajeActivity.class));
-        });
+        cardCentro.setOnClickListener(v ->
+            startActivity(new Intent(MainActivity.this, CentroReciclajeActivity.class))
+        );
 
-        cardEstadisticas.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, EstadisticasActivity.class));
-        });
+        cardEstadisticas.setOnClickListener(v ->
+            startActivity(new Intent(MainActivity.this, EstadisticasActivity.class))
+        );
 
-        cardZonas.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, ZonasActivity.class));
-        });
+        cardZonas.setOnClickListener(v ->
+            startActivity(new Intent(MainActivity.this, ZonasActivity.class))
+        );
     }
 
     @Override
@@ -136,11 +138,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void cargarDatosDePrueba() {
-        if (sistema.getResiduos().getTamanio() == 0) {
-            // Agregar datos de prueba solo la primera vez
-            sistema.registrarVehiculo("ABC-123", "Norte", 1000, 9);
-            sistema.registrarVehiculo("XYZ-789", "Sur", 800, 7);
-            sistema.registrarVehiculo("DEF-456", "Centro", 1200, 8);
+        if (sistema.getResiduos().estaVacia() && sistema.getVehiculosDisponibles().estaVacia()) {
+            // --- Vehículos ---
+            sistema.registrarVehiculo("ECO-001", "Norte", 1000, 9);
+            sistema.registrarVehiculo("ECO-002", "Sur", 1500, 8);
+            sistema.registrarVehiculo("ECO-003", "Centro", 1200, 10);
+            sistema.registrarVehiculo("ECO-004", "Este", 800, 7);
+            sistema.registrarVehiculo("ECO-005", "Oeste", 2000, 5);
+
+            // --- Residuos ---
+
+            // Zona Norte (Residuos variados)
+            sistema.registrarResiduo("Botellas PET", Residuo.TipoResiduo.PLASTICO, 120.5, LocalDate.now().minusDays(1), "Norte", 5);
+            sistema.registrarResiduo("Cajas de cartón", Residuo.TipoResiduo.PAPEL, 50.0, LocalDate.now(), "Norte", 3);
+
+            // Zona Sur (Orgánicos y Vidrio)
+            sistema.registrarResiduo("Restos de mercado", Residuo.TipoResiduo.ORGANICO, 300.0, LocalDate.now().minusDays(2), "Sur", 8);
+            sistema.registrarResiduo("Botellas de vidrio", Residuo.TipoResiduo.VIDRIO, 150.0, LocalDate.now(), "Sur", 6);
+
+            // Zona Centro (Alta densidad - Posible zona crítica)
+            sistema.registrarResiduo("Estructuras metálicas", Residuo.TipoResiduo.METAL, 800.0, LocalDate.now().minusDays(5), "Centro", 9);
+            sistema.registrarResiduo("Baterías usadas", Residuo.TipoResiduo.PELIGROSO, 25.0, LocalDate.now(), "Centro", 10);
+            sistema.registrarResiduo("Documentos oficina", Residuo.TipoResiduo.PAPEL, 100.0, LocalDate.now(), "Centro", 4);
+            sistema.registrarResiduo("Latas aluminio", Residuo.TipoResiduo.METAL, 45.0, LocalDate.now().minusDays(1), "Centro", 5);
+
+            // Zona Oeste (Electrónicos)
+            sistema.registrarResiduo("Monitores viejos", Residuo.TipoResiduo.ELECTRONICO, 60.0, LocalDate.now().minusDays(3), "Oeste", 7);
+            sistema.registrarResiduo("Cables varios", Residuo.TipoResiduo.ELECTRONICO, 15.0, LocalDate.now(), "Oeste", 6);
+
+            Toast.makeText(this, "Datos de prueba cargados automáticamente", Toast.LENGTH_SHORT).show();
         }
     }
     private void verificarPermisoNotificaciones() {

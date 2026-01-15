@@ -7,10 +7,10 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import ec.com.ecotrackapp.models.Zona;
+import ec.com.ecotrackapp.tda.ArrayList;
+
+import ec.com.ecotrackapp.tda.List;
 
 /**
  * CustomView que dibuja un gráfico de barras verticales

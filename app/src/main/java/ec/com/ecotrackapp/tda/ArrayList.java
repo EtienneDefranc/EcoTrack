@@ -13,6 +13,15 @@ public class ArrayList<E> implements List<E> {
         effectiveSize = 0;
     }
 
+    public ArrayList(List<E> other) {
+        this();
+        if (other != null) {
+            for (int i = 0; i < other.size(); i++) {
+                add(other.get(i));
+            }
+        }
+    }
+
     // ------------------------
     // Helpers privados
     // ------------------------
@@ -87,6 +96,35 @@ public class ArrayList<E> implements List<E> {
         return effectiveSize;
     }
 
+    public void sort(Comparator<? super E> c) {
+        quickSort(0, effectiveSize - 1, c);
+    }
+
+    private void quickSort(int low, int high, Comparator<? super E> c) {
+        if (low < high) {
+            int pi = partition(low, high, c);
+            quickSort(low, pi - 1, c);
+            quickSort(pi + 1, high, c);
+        }
+    }
+
+    private int partition(int low, int high, Comparator<? super E> c) {
+        E pivot = elems[high];
+        int i = (low - 1);
+        for (int j = low; j < high; j++) {
+            if (c.compare(elems[j], pivot) <= 0) {
+                i++;
+                E temp = elems[i];
+                elems[i] = elems[j];
+                elems[j] = temp;
+            }
+        }
+        E temp = elems[i + 1];
+        elems[i + 1] = elems[high];
+        elems[high] = temp;
+        return i + 1;
+    }
+
     @Override
     public void add(int index, E element) {
         checkIndexForAdd(index);
@@ -148,5 +186,65 @@ public class ArrayList<E> implements List<E> {
             elems[i] = null;
         }
         effectiveSize = 0;
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return indexOf(o) >= 0;
+    }
+
+    public int indexOf(Object o) {
+        if (o == null) {
+            for (int i = 0; i < effectiveSize; i++)
+                if (elems[i] == null)
+                    return i;
+        } else {
+            for (int i = 0; i < effectiveSize; i++)
+                if (o.equals(elems[i]))
+                    return i;
+        }
+        return -1;
+    }
+
+    @Override
+    public int lastIndexOf(Object o) {
+        if (o == null) {
+            for (int i = effectiveSize - 1; i >= 0; i--)
+                if (elems[i] == null)
+                    return i;
+        } else {
+            for (int i = effectiveSize - 1; i >= 0; i--)
+                if (o.equals(elems[i]))
+                    return i;
+        }
+        return -1;
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        int index = indexOf(o);
+        if (index >= 0) {
+            remove(index);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public java.util.Iterator<E> iterator() {
+        return new java.util.Iterator<E>() {
+            private int currentIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return currentIndex < effectiveSize;
+            }
+
+            @Override
+            public E next() {
+                if (!hasNext()) throw new NoSuchElementException();
+                return elems[currentIndex++];
+            }
+        };
     }
 }

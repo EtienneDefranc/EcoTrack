@@ -1,7 +1,6 @@
 package ec.com.ecotrackapp.tda;
 
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -24,11 +23,15 @@ public class ListaCircularDoble<T> implements Iterable<T>, Serializable {
     }
 
     private Nodo cabeza;
+    private Nodo cursor; // Cursor para navegación
     private int tamanio;
+    private int posicionCursor; // Posición actual del cursor (1-based para mostrar al usuario)
 
     public ListaCircularDoble() {
         this.cabeza = null;
+        this.cursor = null;
         this.tamanio = 0;
+        this.posicionCursor = 0;
     }
 
     public void agregar(T dato) {
@@ -36,6 +39,8 @@ public class ListaCircularDoble<T> implements Iterable<T>, Serializable {
 
         if (cabeza == null) {
             cabeza = nuevoNodo;
+            cursor = nuevoNodo;
+            posicionCursor = 1;
         } else {
             Nodo ultimo = cabeza.anterior;
             ultimo.siguiente = nuevoNodo;
@@ -50,6 +55,8 @@ public class ListaCircularDoble<T> implements Iterable<T>, Serializable {
         agregar(dato);
         if (cabeza != null) {
             cabeza = cabeza.anterior;
+            cursor = cabeza;
+            posicionCursor = 1;
         }
     }
 
@@ -61,14 +68,22 @@ public class ListaCircularDoble<T> implements Iterable<T>, Serializable {
             if (actual.dato.equals(dato)) {
                 if (tamanio == 1) {
                     cabeza = null;
+                    cursor = null;
+                    posicionCursor = 0;
                 } else {
                     actual.anterior.siguiente = actual.siguiente;
                     actual.siguiente.anterior = actual.anterior;
                     if (actual == cabeza) {
                         cabeza = actual.siguiente;
                     }
+                    if (actual == cursor) {
+                        cursor = actual.siguiente;
+                    }
                 }
                 tamanio--;
+                if (posicionCursor > tamanio) {
+                    posicionCursor = tamanio;
+                }
                 return true;
             }
             actual = actual.siguiente;
@@ -103,6 +118,61 @@ public class ListaCircularDoble<T> implements Iterable<T>, Serializable {
         return actual.dato;
     }
 
+    /**
+     * Obtiene el elemento actual donde está el cursor
+     */
+    public T obtenerActual() {
+        if (cursor == null) {
+            throw new NoSuchElementException("La lista está vacía");
+        }
+        return cursor.dato;
+    }
+
+    /**
+     * Mueve el cursor al siguiente elemento y lo retorna
+     */
+    public T siguiente() {
+        if (cursor == null) {
+            throw new NoSuchElementException("La lista está vacía");
+        }
+        cursor = cursor.siguiente;
+        posicionCursor++;
+        if (posicionCursor > tamanio) {
+            posicionCursor = 1; // Circular: vuelve al inicio
+        }
+        return cursor.dato;
+    }
+
+    /**
+     * Mueve el cursor al elemento anterior y lo retorna
+     */
+    public T anterior() {
+        if (cursor == null) {
+            throw new NoSuchElementException("La lista está vacía");
+        }
+        cursor = cursor.anterior;
+        posicionCursor--;
+        if (posicionCursor < 1) {
+            posicionCursor = tamanio; // Circular: va al final
+        }
+        return cursor.dato;
+    }
+
+    /**
+     * Reinicia el cursor al primer elemento (cabeza)
+     */
+    public void reiniciarCursor() {
+        cursor = cabeza;
+        posicionCursor = (cabeza != null) ? 1 : 0;
+    }
+
+    /**
+     * Obtiene la posición actual del cursor (1-based)
+     */
+    public int getPosicionCursor() {
+        return posicionCursor;
+    }
+
     public int getTamanio() {
         return tamanio;
     }
@@ -112,68 +182,56 @@ public class ListaCircularDoble<T> implements Iterable<T>, Serializable {
     }
 
     @Override
-    public Iterator<T> iterator() {
-        return new IteradorAdelante();
-    }
+    public java.util.Iterator<T> iterator() {
+        return new java.util.Iterator<T>() {
+            private Nodo actual = cabeza;
+            private int visitados = 0;
 
-    public Iterator<T> iteradorReversa() {
-        return new IteradorAtras();
-    }
-
-    private class IteradorAdelante implements Iterator<T> {
-        private Nodo actual;
-        private int contador;
-
-        IteradorAdelante() {
-            this.actual = cabeza;
-            this.contador = 0;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return contador < tamanio;
-        }
-
-        @Override
-        public T next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
+            @Override
+            public boolean hasNext() {
+                return actual != null && visitados < tamanio;
             }
-            T dato = actual.dato;
-            actual = actual.siguiente;
-            contador++;
-            return dato;
-        }
+
+            @Override
+            public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                T dato = actual.dato;
+                actual = actual.siguiente;
+                visitados++;
+                return dato;
+            }
+        };
     }
 
-    private class IteradorAtras implements Iterator<T> {
-        private Nodo actual;
-        private int contador;
+    public java.util.Iterator<T> iteradorReversa() {
+        return new java.util.Iterator<T>() {
+            private Nodo actual = (cabeza != null) ? cabeza.anterior : null;
+            private int visitados = 0;
 
-        IteradorAtras() {
-            this.actual = (cabeza != null) ? cabeza.anterior : null;
-            this.contador = 0;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return contador < tamanio;
-        }
-
-        @Override
-        public T next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
+            @Override
+            public boolean hasNext() {
+                return actual != null && visitados < tamanio;
             }
-            T dato = actual.dato;
-            actual = actual.anterior;
-            contador++;
-            return dato;
-        }
+
+            @Override
+            public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                T dato = actual.dato;
+                actual = actual.anterior;
+                visitados++;
+                return dato;
+            }
+        };
     }
 
     public void limpiar() {
         cabeza = null;
+        cursor = null;
         tamanio = 0;
+        posicionCursor = 0;
     }
 }

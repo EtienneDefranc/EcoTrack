@@ -14,10 +14,6 @@ import ec.com.ecotrackapp.controller.SistemaEcoTrack;
 import ec.com.ecotrackapp.models.Residuo;
 import ec.com.ecotrackapp.tda.ListaCircularDoble;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
 public class CentroReciclajeActivity extends AppCompatActivity {
 
     private SistemaEcoTrack sistema;
@@ -84,7 +80,7 @@ public class CentroReciclajeActivity extends AppCompatActivity {
     }
 
     private void actualizarCentro() {
-        List<String> items = new ArrayList<>();
+        java.util.List<String> items = new java.util.ArrayList<>();
 
         int totalResiduos = sistema.getCentroReciclaje().getTamanio();
 
@@ -99,7 +95,7 @@ public class CentroReciclajeActivity extends AppCompatActivity {
             items.add("📊 Información del Centro:");
             items.add("━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             items.add("");
-            items.add(String.format(Locale.getDefault(), "📦 Total de residuos: %d", totalResiduos));
+            items.add(String.format(java.util.Locale.getDefault(), "📦 Total de residuos: %d", totalResiduos));
             items.add("");
             items.add("━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             items.add("🔝 Último residuo (TOPE):");
@@ -110,7 +106,7 @@ public class CentroReciclajeActivity extends AppCompatActivity {
                 items.add("");
                 items.add("📌 " + tope.getNombre());
                 items.add("🏷️  Tipo: " + tope.getTipo().getNombre());
-                items.add("⚖️  Peso: " + String.format(Locale.getDefault(), "%.2f kg", tope.getPeso()));
+                items.add("⚖️  Peso: " + String.format(java.util.Locale.getDefault(), "%.2f kg", tope.getPeso()));
                 if (tope.getZona() != null && !tope.getZona().isEmpty()) {
                     items.add("📍 Zona: " + tope.getZona());
                 }
@@ -132,6 +128,6 @@ public class CentroReciclajeActivity extends AppCompatActivity {
         );
         lvCentro.setAdapter(adapter);
 
-        tvInfo.setText(String.format(Locale.getDefault(), "Residuos en centro: %d", totalResiduos));
+        tvInfo.setText(String.format(java.util.Locale.getDefault(), "Residuos en centro: %d", totalResiduos));
     }
 }

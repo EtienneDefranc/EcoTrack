@@ -4,10 +4,10 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import ec.com.ecotrackapp.tda.ArrayList;
+import ec.com.ecotrackapp.tda.HashMap;
+import ec.com.ecotrackapp.tda.List;
+import ec.com.ecotrackapp.tda.Map;
 
 import ec.com.ecotrackapp.controller.SistemaEcoTrack;
 import ec.com.ecotrackapp.models.Residuo;

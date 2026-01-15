@@ -12,8 +12,7 @@ import com.google.android.material.button.MaterialButton;
 import ec.com.ecotrackapp.controller.SistemaEcoTrack;
 import ec.com.ecotrackapp.models.Zona;
 
-import java.util.ArrayList;
-import java.util.List;
+import ec.com.ecotrackapp.tda.List;
 import java.util.Locale;
 
 public class ZonasActivity extends AppCompatActivity {
@@ -75,7 +74,7 @@ public class ZonasActivity extends AppCompatActivity {
     }
 
     private void actualizarListaZonasCriticas(List<Zona> zonasCriticas) {
-        List<String> items = new ArrayList<>();
+        java.util.List<String> items = new java.util.ArrayList<>();
 
         if (zonasCriticas.isEmpty()) {
             items.add("");
@@ -105,7 +104,7 @@ public class ZonasActivity extends AppCompatActivity {
     }
 
     private void actualizarListaTodasZonas(List<Zona> todasLasZonas) {
-        List<String> items = new ArrayList<>();
+        java.util.List<String> items = new java.util.ArrayList<>();
 
         if (todasLasZonas.isEmpty()) {
             items.add("");

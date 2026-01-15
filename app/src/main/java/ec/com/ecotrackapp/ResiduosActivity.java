@@ -11,11 +11,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import ec.com.ecotrackapp.controller.SistemaEcoTrack;
 import ec.com.ecotrackapp.models.Residuo;
+import ec.com.ecotrackapp.tda.ArrayList;
 import ec.com.ecotrackapp.tda.Comparadores;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import ec.com.ecotrackapp.tda.List;
+import java.util.Locale;
 
 public class ResiduosActivity extends AppCompatActivity {
 
@@ -25,19 +25,12 @@ public class ResiduosActivity extends AppCompatActivity {
     private Button btnActualizar, btnIterarAdelante, btnIterarAtras, btnVolver;
     private TextView tvInfo;
 
-    private Iterator<Residuo> iteradorActual;
-    private int posicionIterador;
-    private boolean iterandoAdelante;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_residuos);
 
         sistema = SistemaEcoTrack.getInstance(this);
-        iteradorActual = null;
-        posicionIterador = 0;
-        iterandoAdelante = true;
 
         inicializarVistas();
         configurarSpinner();
@@ -75,10 +68,13 @@ public class ResiduosActivity extends AppCompatActivity {
 
     private void actualizarListaResiduos() {
         if (sistema.getResiduos().estaVacia()) {
-            tvInfo.setText("No hay residuos registrados");
+            tvInfo.setText(R.string.no_hay_residuos_registrados);
             lvResiduos.setAdapter(null);
             return;
         }
+
+        // Reiniciar el cursor al mostrar la lista completa
+        sistema.getResiduos().reiniciarCursor();
 
         String criterio = (String) spOrdenamiento.getSelectedItem();
         List<Residuo> listaOrdenada;
@@ -111,81 +107,66 @@ public class ResiduosActivity extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
             this,
             android.R.layout.simple_list_item_1,
-            items
+            new java.util.ArrayList<>(convertirLista(items))
         );
         lvResiduos.setAdapter(adapter);
 
-        tvInfo.setText(String.format("Total de residuos: %d | Ordenado por: %s",
+        tvInfo.setText(String.format(Locale.getDefault(), "Total de residuos: %d | Ordenado por: %s",
             listaOrdenada.size(), criterio));
     }
 
     private void iterarAdelante() {
         if (sistema.getResiduos().estaVacia()) {
-            tvInfo.setText("No hay residuos para iterar");
+            tvInfo.setText(R.string.no_hay_residuos_iterar);
             return;
         }
 
-        if (iteradorActual == null || !iterandoAdelante || !iteradorActual.hasNext()) {
-            iteradorActual = sistema.getResiduos().iterator();
-            posicionIterador = 0;
-            iterandoAdelante = true;
-        }
-
-        if (iteradorActual.hasNext()) {
-            Residuo residuo = iteradorActual.next();
-            posicionIterador++;
-
-            List<String> items = new ArrayList<>();
-            items.add(residuo.toString());
-            items.add("Fecha: " + residuo.getFechaRecoleccion());
-
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_list_item_1,
-                items
-            );
-            lvResiduos.setAdapter(adapter);
-
-            tvInfo.setText(String.format("Iterando hacia adelante - Posición: %d/%d",
-                posicionIterador, sistema.getResiduos().getTamanio()));
-        } else {
-            iteradorActual = null;
-            tvInfo.setText("Fin de la lista. Presione nuevamente para reiniciar.");
-        }
+        // Usar el método siguiente() del cursor
+        Residuo residuo = sistema.getResiduos().siguiente();
+        mostrarResiduo(residuo, "Siguiente");
     }
 
     private void iterarAtras() {
         if (sistema.getResiduos().estaVacia()) {
-            tvInfo.setText("No hay residuos para iterar");
+            tvInfo.setText(R.string.no_hay_residuos_iterar);
             return;
         }
 
-        if (iteradorActual == null || iterandoAdelante || !iteradorActual.hasNext()) {
-            iteradorActual = sistema.getResiduos().iteradorReversa();
-            posicionIterador = 0;
-            iterandoAdelante = false;
+        // Usar el método anterior() del cursor
+        Residuo residuo = sistema.getResiduos().anterior();
+        mostrarResiduo(residuo, "Anterior");
+    }
+
+    private void mostrarResiduo(Residuo residuo, String direccion) {
+        java.util.List<String> items = new java.util.ArrayList<>();
+        items.add("🆔 ID: " + residuo.getId());
+        items.add("📦 " + residuo.getNombre());
+        items.add("🏷️ Tipo: " + residuo.getTipo().getNombre());
+        items.add("⚖️ Peso: " + String.format(Locale.getDefault(), "%.2f kg", residuo.getPeso()));
+        items.add("📍 Zona: " + residuo.getZona());
+        items.add("⚠️ Prioridad: " + residuo.getPrioridadAmbiental() + "/10");
+        if (residuo.getFechaRecoleccion() != null) {
+            items.add("📅 Fecha: " + residuo.getFechaRecoleccion().toString());
         }
 
-        if (iteradorActual.hasNext()) {
-            Residuo residuo = iteradorActual.next();
-            posicionIterador++;
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+            this,
+            android.R.layout.simple_list_item_1,
+            items
+        );
+        lvResiduos.setAdapter(adapter);
 
-            List<String> items = new ArrayList<>();
-            items.add(residuo.toString());
-            items.add("Fecha: " + residuo.getFechaRecoleccion());
+        int posicion = sistema.getResiduos().getPosicionCursor();
+        int total = sistema.getResiduos().getTamanio();
+        tvInfo.setText(String.format(Locale.getDefault(), "🔄 %s - Posición: %d/%d (Lista Circular)",
+            direccion, posicion, total));
+    }
 
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_list_item_1,
-                items
-            );
-            lvResiduos.setAdapter(adapter);
-
-            tvInfo.setText(String.format("Iterando hacia atrás - Posición: %d/%d",
-                posicionIterador, sistema.getResiduos().getTamanio()));
-        } else {
-            iteradorActual = null;
-            tvInfo.setText("Fin de la lista. Presione nuevamente para reiniciar.");
+    private java.util.List<String> convertirLista(List<String> customList) {
+        java.util.List<String> javaList = new java.util.ArrayList<>();
+        for (String item : customList) {
+            javaList.add(item);
         }
+        return javaList;
     }
 }

@@ -11,9 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import ec.com.ecotrackapp.controller.SistemaEcoTrack;
 import ec.com.ecotrackapp.models.VehiculoRecolector;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Locale;
 
 public class VehiculosActivity extends AppCompatActivity {
 
@@ -61,7 +59,7 @@ public class VehiculosActivity extends AppCompatActivity {
     }
 
     private void actualizarListaVehiculos() {
-        List<String> items = new ArrayList<>();
+        java.util.List<String> items = new java.util.ArrayList<>();
 
         items.add("=== VEHÍCULOS EN RUTA ===");
         if (sistema.getVehiculosEnRuta().isEmpty()) {
@@ -87,9 +85,8 @@ public class VehiculosActivity extends AppCompatActivity {
         );
         lvVehiculos.setAdapter(adapter);
 
-        tvInfo.setText(String.format("Disponibles: %d | En Ruta: %d",
+        tvInfo.setText(String.format(Locale.getDefault(), "Disponibles: %d | En Ruta: %d",
             sistema.getVehiculosDisponibles().getTamanio(),
             sistema.getVehiculosEnRuta().size()));
     }
 }
-

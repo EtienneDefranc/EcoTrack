@@ -2,4 +2,9 @@
     <string name="app_name">EcoTrack</string>
     <string name="app_description">Sistema de Gestión de Residuos Urbanos</string>
     <string name="no_hay_zonas_criticas">No hay zonas críticas en este momento ✅</string>
+    <string name="ultima_actualizacion">Última actualización: %s</string>
+    <string name="ultima_actualizacion_ahora">Última actualización: ahora</string>
+    <string name="no_hay_residuos_registrados">No hay residuos registrados</string>
+    <string name="no_hay_residuos_iterar">No hay residuos para iterar</string>
+    <string name="fin_lista_reiniciar">Fin de la lista. Presione nuevamente para reiniciar.</string>
 </resources>

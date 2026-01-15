@@ -1,8 +1,8 @@
 package ec.com.ecotrackapp.tda;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
+import ec.com.ecotrackapp.tda.ArrayList;
+import ec.com.ecotrackapp.tda.Comparator;
 import java.util.NoSuchElementException;
 
 /**
@@ -129,4 +129,3 @@ public class ColaPrioridad<T> implements Serializable {
         return "Cola de prioridad con " + getTamanio() + " elementos";
     }
 }
-

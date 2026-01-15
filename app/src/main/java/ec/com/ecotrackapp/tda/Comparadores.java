@@ -1,8 +1,7 @@
 package ec.com.ecotrackapp.tda;
 
 import ec.com.ecotrackapp.models.Residuo;
-
-import java.util.Comparator;
+import ec.com.ecotrackapp.tda.Comparator;
 
 /**
  * Clase que contiene los comparadores para ordenar residuos
@@ -59,4 +58,3 @@ public class Comparadores {
         }
     }
 }
-

@@ -8,9 +8,9 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import ec.com.ecotrackapp.tda.ArrayList;
+import ec.com.ecotrackapp.tda.List;
+import ec.com.ecotrackapp.tda.Map;
 
 /**
  * Pie chart del peso por tipo de residuo.

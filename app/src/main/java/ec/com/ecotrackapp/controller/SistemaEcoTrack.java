@@ -7,10 +7,15 @@ import ec.com.ecotrackapp.models.Zona;
 import ec.com.ecotrackapp.tda.ColaPrioridad;
 import ec.com.ecotrackapp.tda.ListaCircularDoble;
 import ec.com.ecotrackapp.tda.PilaReciclaje;
+import ec.com.ecotrackapp.tda.ArrayList;
+import ec.com.ecotrackapp.tda.HashMap;
+import ec.com.ecotrackapp.tda.TreeMap;
+import ec.com.ecotrackapp.tda.List;
+import ec.com.ecotrackapp.tda.Map;
+import ec.com.ecotrackapp.tda.Comparator;
 
 import java.io.*;
 import java.time.LocalDate;
-import java.util.*;
 
 import android.util.Log;
 import org.json.JSONArray;
@@ -21,12 +26,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.ArrayList;
 
-import ec.com.ecotrackapp.models.EstadoSistema;
-import ec.com.ecotrackapp.models.Zona;
-import ec.com.ecotrackapp.models.Residuo;
-import ec.com.ecotrackapp.models.VehiculoRecolector;
 /**
  * Singleton del Sistema EcoTrack para Android
  */
@@ -35,12 +35,12 @@ public class SistemaEcoTrack implements Serializable {
     private static SistemaEcoTrack instance;
     private static final String ARCHIVO_DATOS = "ecotrack_data.dat";
 
-    private ListaCircularDoble<Residuo> residuos;
-    private ColaPrioridad<VehiculoRecolector> vehiculosDisponibles;
-    private PilaReciclaje<Residuo> centroReciclaje;
-    private HashMap<String, Zona> zonas;
-    private TreeMap<Residuo.TipoResiduo, Double> estadisticasPorTipo;
-    private ArrayList<VehiculoRecolector> vehiculosEnRuta;
+    private final ListaCircularDoble<Residuo> residuos;
+    private final ColaPrioridad<VehiculoRecolector> vehiculosDisponibles;
+    private final PilaReciclaje<Residuo> centroReciclaje;
+    private final HashMap<String, Zona> zonas;
+    private final TreeMap<Residuo.TipoResiduo, Double> estadisticasPorTipo;
+    private final ArrayList<VehiculoRecolector> vehiculosEnRuta;
 
     private static final String NOMBRE_BACKUP = "ecotrack_backup.json";
 
@@ -79,9 +79,12 @@ public class SistemaEcoTrack implements Serializable {
         Residuo residuo = new Residuo(nombre, tipo, peso, fecha, zona, prioridad);
         residuos.agregar(residuo);
 
-        Zona zonaObj = zonas.getOrDefault(zona, new Zona(zona));
+        Zona zonaObj = zonas.get(zona);
+        if (zonaObj == null) {
+            zonaObj = new Zona(zona);
+            zonas.put(zona, zonaObj);
+        }
         zonaObj.agregarResiduoPendiente(peso);
-        zonas.put(zona, zonaObj);
 
         double pesoActual = estadisticasPorTipo.get(tipo);
         estadisticasPorTipo.put(tipo, pesoActual + peso);
@@ -133,7 +136,8 @@ public class SistemaEcoTrack implements Serializable {
 
     public List<Zona> obtenerZonasCriticas() {
         List<Zona> criticas = new ArrayList<>();
-        for (Zona zona : zonas.values()) {
+        for (Map.Entry<String, Zona> entry : zonas.entrySet()) {
+            Zona zona = entry.getValue();
             if (zona.esCritica()) {
                 criticas.add(zona);
             }
@@ -143,8 +147,11 @@ public class SistemaEcoTrack implements Serializable {
     }
 
     public List<Zona> obtenerTodasLasZonas() {
-        List<Zona> lista = new ArrayList<>(zonas.values());
-        lista.sort(Comparator.comparing(Zona::calcularUtilidad));
+        List<Zona> lista = new ArrayList<>();
+        for (Map.Entry<String, Zona> entry : zonas.entrySet()) {
+            lista.add(entry.getValue());
+        }
+        lista.sort((z1, z2) -> z1.getNombre().compareTo(z2.getNombre()));
         return lista;
     }
 
@@ -158,8 +165,8 @@ public class SistemaEcoTrack implements Serializable {
         stats.put("zonasCriticas", obtenerZonasCriticas().size());
 
         double pesoTotal = 0;
-        for (double peso : estadisticasPorTipo.values()) {
-            pesoTotal += peso;
+        for (Map.Entry<Residuo.TipoResiduo, Double> entry : estadisticasPorTipo.entrySet()) {
+            pesoTotal += entry.getValue();
         }
         stats.put("pesoTotal", pesoTotal);
 
@@ -174,7 +181,7 @@ public class SistemaEcoTrack implements Serializable {
             oos.close();
             fos.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("SistemaEcoTrack", "Error al guardar datos", e);
         }
     }
 
@@ -226,29 +233,6 @@ public class SistemaEcoTrack implements Serializable {
         return resultado;
     }
 
-
-
-    // tengo que modificarlo para que, confirmar la forma en la que accedo a
-    // residuos y vehiculos
-    private EstadoSistema construirEstado() {
-        EstadoSistema estado = new EstadoSistema();
-
-        // Si tienes HashMap<String, Zona> zonas;
-        estado.zonas = new ArrayList<>(zonas.values());
-
-        estado.residuos = new ArrayList<>();
-        for (int i = 0; i < residuos.getTamanio(); i++) {
-            estado.residuos.add(residuos.obtener(i));
-        }
-
-        // Vehículos
-        estado.vehiculos = new ArrayList<>();
-        for (int i = 0; i < vehiculosEnRuta.size(); i++) {
-            estado.vehiculos.add(vehiculosEnRuta.get(i)); // ajusta
-        }
-
-        return estado;
-    }
     public JSONArray zonasToJsonArray(HashMap<String, Zona> zonas) throws Exception {
         JSONArray arr = new JSONArray();
         for (Zona z : zonas.values()) {
@@ -284,20 +268,20 @@ public class SistemaEcoTrack implements Serializable {
             root.put("residuos", residuosToJsonArray(residuos));
             // root.put("vehiculos", vehiculosToJsonArray(vehiculos));
 
-            File file = new File(context.getFilesDir(), "ecotrack_backup.json");
+            File file = new File(context.getFilesDir(), NOMBRE_BACKUP);
             FileWriter fw = new FileWriter(file);
             fw.write(root.toString(2)); // bonito
             fw.close();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("SistemaEcoTrack", "Error al exportar JSON", e);
             return false;
         }
     }
 
     public boolean importarJson(Context context) {
         try {
-            File file = new File(context.getFilesDir(), "ecotrack_backup.json");
+            File file = new File(context.getFilesDir(), NOMBRE_BACKUP);
             if (!file.exists()) return false;
 
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -341,7 +325,11 @@ public class SistemaEcoTrack implements Serializable {
 
                 LocalDate fecha = null;
                 if (!fechaStr.isEmpty()) {
-                    fecha = LocalDate.parse(fechaStr);
+                    try {
+                        fecha = LocalDate.parse(fechaStr);
+                    } catch (Exception e) {
+                        Log.e("SistemaEcoTrack", "Error al parsear fecha", e);
+                    }
                 }
 
                 Residuo r = new Residuo(
@@ -364,11 +352,10 @@ public class SistemaEcoTrack implements Serializable {
 
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("SistemaEcoTrack", "Error al importar JSON", e);
             return false;
         }
     }
 
 
 }
-
