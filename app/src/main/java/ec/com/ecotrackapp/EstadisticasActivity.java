@@ -11,7 +11,11 @@ import com.google.android.material.button.MaterialButton;
 
 import ec.com.ecotrackapp.controller.SistemaEcoTrack;
 import ec.com.ecotrackapp.models.Residuo;
+import ec.com.ecotrackapp.tda.ArrayList;
+import ec.com.ecotrackapp.tda.List;
 import ec.com.ecotrackapp.tda.Map;
+import ec.com.ecotrackapp.tda.TdaListAdapter;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -59,7 +63,7 @@ public class EstadisticasActivity extends AppCompatActivity {
     }
 
     private void actualizarEstadisticas() {
-        java.util.List<String> items = new java.util.ArrayList<>();
+        List<String> items = new ArrayList<>();
         Map<String, Object> stats = sistema.obtenerEstadisticas();
 
         // Actualizar cards de resumen
@@ -106,12 +110,8 @@ public class EstadisticasActivity extends AppCompatActivity {
             }
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-            this,
-            android.R.layout.simple_list_item_1,
-            items
-        );
-        lvEstadisticas.setAdapter(adapter);
+        lvEstadisticas.setAdapter(new TdaListAdapter(this, items));
+
 
         // Actualizar hora
         try {

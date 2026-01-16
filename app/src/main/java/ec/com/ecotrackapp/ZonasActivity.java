@@ -12,7 +12,10 @@ import com.google.android.material.button.MaterialButton;
 import ec.com.ecotrackapp.controller.SistemaEcoTrack;
 import ec.com.ecotrackapp.models.Zona;
 
+import ec.com.ecotrackapp.tda.ArrayList;
 import ec.com.ecotrackapp.tda.List;
+import ec.com.ecotrackapp.tda.TdaListAdapter;
+
 import java.util.Locale;
 
 public class ZonasActivity extends AppCompatActivity {
@@ -74,7 +77,7 @@ public class ZonasActivity extends AppCompatActivity {
     }
 
     private void actualizarListaZonasCriticas(List<Zona> zonasCriticas) {
-        java.util.List<String> items = new java.util.ArrayList<>();
+        List<String> items = new ArrayList<>();
 
         if (zonasCriticas.isEmpty()) {
             items.add("");
@@ -95,16 +98,12 @@ public class ZonasActivity extends AppCompatActivity {
             }
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-            this,
-            android.R.layout.simple_list_item_1,
-            items
-        );
-        lvZonasCriticas.setAdapter(adapter);
+
+        lvZonasCriticas.setAdapter(new TdaListAdapter(this, items));
     }
 
     private void actualizarListaTodasZonas(List<Zona> todasLasZonas) {
-        java.util.List<String> items = new java.util.ArrayList<>();
+        List<String> items = new ArrayList<>();
 
         if (todasLasZonas.isEmpty()) {
             items.add("");
@@ -139,11 +138,6 @@ public class ZonasActivity extends AppCompatActivity {
                 todasLasZonas.size() > 1 ? "s" : ""));
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-            this,
-            android.R.layout.simple_list_item_1,
-            items
-        );
-        lvZonas.setAdapter(adapter);
+        lvZonas.setAdapter(new TdaListAdapter(this, items));
     }
 }

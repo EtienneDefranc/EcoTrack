@@ -15,6 +15,8 @@ import ec.com.ecotrackapp.tda.ArrayList;
 import ec.com.ecotrackapp.tda.Comparadores;
 
 import ec.com.ecotrackapp.tda.List;
+import ec.com.ecotrackapp.tda.TdaListAdapter;
+
 import java.util.Locale;
 
 public class ResiduosActivity extends AppCompatActivity {
@@ -104,12 +106,8 @@ public class ResiduosActivity extends AppCompatActivity {
             items.add(residuo.toString());
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-            this,
-            android.R.layout.simple_list_item_1,
-            new java.util.ArrayList<>(convertirLista(items))
-        );
-        lvResiduos.setAdapter(adapter);
+
+        lvResiduos.setAdapter(new TdaListAdapter(this, items));
 
         tvInfo.setText(String.format(Locale.getDefault(), "Total de residuos: %d | Ordenado por: %s",
             listaOrdenada.size(), criterio));
@@ -138,7 +136,7 @@ public class ResiduosActivity extends AppCompatActivity {
     }
 
     private void mostrarResiduo(Residuo residuo, String direccion) {
-        java.util.List<String> items = new java.util.ArrayList<>();
+        List<String> items = new ArrayList<>();
         items.add("🆔 ID: " + residuo.getId());
         items.add("📦 " + residuo.getNombre());
         items.add("🏷️ Tipo: " + residuo.getTipo().getNombre());
@@ -149,12 +147,8 @@ public class ResiduosActivity extends AppCompatActivity {
             items.add("📅 Fecha: " + residuo.getFechaRecoleccion().toString());
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-            this,
-            android.R.layout.simple_list_item_1,
-            items
-        );
-        lvResiduos.setAdapter(adapter);
+
+        lvResiduos.setAdapter(new TdaListAdapter(this, items));
 
         int posicion = sistema.getResiduos().getPosicionCursor();
         int total = sistema.getResiduos().getTamanio();
@@ -162,11 +156,4 @@ public class ResiduosActivity extends AppCompatActivity {
             direccion, posicion, total));
     }
 
-    private java.util.List<String> convertirLista(List<String> customList) {
-        java.util.List<String> javaList = new java.util.ArrayList<>();
-        for (String item : customList) {
-            javaList.add(item);
-        }
-        return javaList;
-    }
 }

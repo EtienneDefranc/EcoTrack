@@ -12,7 +12,11 @@ import com.google.android.material.button.MaterialButton;
 
 import ec.com.ecotrackapp.controller.SistemaEcoTrack;
 import ec.com.ecotrackapp.models.Residuo;
+import ec.com.ecotrackapp.tda.ArrayList;
 import ec.com.ecotrackapp.tda.ListaCircularDoble;
+
+import ec.com.ecotrackapp.tda.List;
+import ec.com.ecotrackapp.tda.TdaListAdapter;
 
 public class CentroReciclajeActivity extends AppCompatActivity {
 
@@ -80,7 +84,7 @@ public class CentroReciclajeActivity extends AppCompatActivity {
     }
 
     private void actualizarCentro() {
-        java.util.List<String> items = new java.util.ArrayList<>();
+        List<String> items = new ArrayList<>();
 
         int totalResiduos = sistema.getCentroReciclaje().getTamanio();
 
@@ -121,12 +125,7 @@ public class CentroReciclajeActivity extends AppCompatActivity {
             items.add("   el primero en salir");
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-            this,
-            android.R.layout.simple_list_item_1,
-            items
-        );
-        lvCentro.setAdapter(adapter);
+        lvCentro.setAdapter(new TdaListAdapter(this, items));
 
         tvInfo.setText(String.format(java.util.Locale.getDefault(), "Residuos en centro: %d", totalResiduos));
     }

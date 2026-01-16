@@ -11,6 +11,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import ec.com.ecotrackapp.controller.SistemaEcoTrack;
 import ec.com.ecotrackapp.models.VehiculoRecolector;
+import ec.com.ecotrackapp.tda.ArrayList;
+import ec.com.ecotrackapp.tda.List;
+import ec.com.ecotrackapp.tda.TdaListAdapter;
+
 import java.util.Locale;
 
 public class VehiculosActivity extends AppCompatActivity {
@@ -59,7 +63,7 @@ public class VehiculosActivity extends AppCompatActivity {
     }
 
     private void actualizarListaVehiculos() {
-        java.util.List<String> items = new java.util.ArrayList<>();
+        List<String> items = new ArrayList<>();
 
         items.add("=== VEHÍCULOS EN RUTA ===");
         if (sistema.getVehiculosEnRuta().isEmpty()) {
@@ -78,12 +82,7 @@ public class VehiculosActivity extends AppCompatActivity {
             items.add("Total en cola: " + sistema.getVehiculosDisponibles().getTamanio());
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-            this,
-            android.R.layout.simple_list_item_1,
-            items
-        );
-        lvVehiculos.setAdapter(adapter);
+        lvVehiculos.setAdapter(new TdaListAdapter(this, items));
 
         tvInfo.setText(String.format(Locale.getDefault(), "Disponibles: %d | En Ruta: %d",
             sistema.getVehiculosDisponibles().getTamanio(),
